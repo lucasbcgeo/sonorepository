@@ -1,0 +1,183 @@
+
+let pages = dv
+    .pages('"Jornada/Notas Diárias"')
+    .filter(p => {      
+        let dateOfFile = window.moment(p.file.name, "DD-MM-YYYY");
+        let formattedDate = dateOfFile.isValid() ? dateOfFile.format("YYYY-MM-DD") : null;
+        return formattedDate && window.moment(formattedDate).isSameOrAfter(window.moment(input.START)) && window.moment(formattedDate).isSameOrBefore(window.moment(input.END));
+    })
+	.sort(p => p.file.name);
+
+
+let timeDate = pages.map(p => {
+    let dateOfFile = window.moment(p.file.name,"DD-MM-YYYY");
+    return dateOfFile.isValid() ? dateOfFile.format("dddd") : "Invalid Date";
+	
+})
+.filter(date => date !== "Invalid Date") //
+.sort((a, b) => window.moment(a).diff(window.moment(b))); // 
+
+const ratingData = pages.notadoDia;
+const sleepStart = pages.sleepStart;
+const sleepEnd = pages.sleepEnd;
+const sleepRatingData = pages.notadoSono;
+
+const sleepStartStop = sleepStart.values.map((value, index) => {
+	return [value, sleepEnd.values[index]];
+});
+
+const sleepStartStopNumber = sleepStart.values.map((value, index) => {
+	let start =
+		(parseInt(value.split(':')[0]) * 60 + parseInt(value.split(':')[1])) / 60;
+	if (start > 20) {
+		start = start - 24;
+	}
+
+	const end =
+		(parseInt(sleepEnd.values[index].split(':')[0]) * 60 +
+			parseInt(sleepEnd.values[index].split(':')[1])) /
+		60;
+
+	return [start, end];
+});
+
+let sleepData = sleepStartStopNumber.map(([start, end], index) => {
+    let duration = end - start;
+    if (duration < 0) {
+        duration += 24; // Ajuste para quando o sono passa da meia-noite
+    }
+
+   
+    let date = moment(sleepEnd.dates[index], "YYYY-MM-DD"); // Substitua 'sleepEnd.dates[index]' pela sua lógica de obtenção da data
+
+    return {
+        date: date.format("YYYY-MM-DD"), // Formata a data no formato desejado
+        duration: duration.toFixed(1) // Arredonda a duração para 1 casa decimal
+    };
+});
+
+// Observação: Este código assume que 'input.start' e 'input.end' são datas válidas e que 'moment' está disponível
+
+
+const chartData = {
+	beginAtZero: true,
+
+	data: {
+		labels: timeDate,
+		datasets: [
+			{
+				yAxisID: 'A',
+				type: 'line',
+				label: 'notadoDia',
+				data: ratingData.values,
+				borderColor: ['rgb(255, 99, 132)'],
+				borderWidth: 1,
+				bestFit: true,
+			},
+			{
+				yAxisID: 'A',
+				type: 'line',
+				label: 'Horas de sono',
+				data: sleepData.map(item => item.duration),
+				borderColor: ['rgb(54, 162, 235)'],
+				borderWidth: 1,
+				bestFit: true,
+			},
+			{
+				yAxisID: 'A',
+				type: 'line',
+				label: 'Nota do Sono',
+				data: sleepRatingData.values,
+				borderColor: ['rgb(255, 206, 86)'],
+				borderWidth: 1,
+				bestFit: true,
+			},
+			{
+				yAxisID: 'B',
+				type: 'bar',
+				label: 'Acordou/Dormiu',
+				data: sleepStartStopNumber,
+				backgroundColor: ['rgb(153, 102, 255, 0.2)'],
+				borderColor: ['rgb(153, 102, 255, 1)'],
+				borderWidth: 1,
+				bestFit: true,
+			},
+		],
+	},
+	options: {
+		//Explicações de options até scales abaixo //
+		plugins: {
+			tooltip: {
+				callbacks: {
+					label: function(context) {
+						if (context.dataset.label === 'Acordou/Dormiu') {
+							let value = context.raw;
+							const formatTime = (time) => {
+								let hours = Math.floor(time);
+								let minutes = Math.round((time - hours) * 60);
+								hours = hours < 0 ? 24 + hours : hours;
+								return hours.toString().padStart(2, '0') + ':' + minutes.toString().padStart(2, '0');
+							};
+	
+							const startTime = formatTime(value[0]);
+							const endTime = formatTime(value[1]);
+							return `Dormiu: ${startTime}, Acordou: ${endTime}`;
+						} else {
+							return `${context.dataset.label}: ${context.formattedValue}`;
+						}
+					}
+				}
+			}
+		},
+		scales: {
+			A: {
+				type: 'linear',
+				position: 'left',
+				beginAtZero: true,
+				min: 0,
+				max: 10,
+				
+			},
+			B: {
+				type: 'linear',
+				position: 'right',
+				max: 13,
+				min: -3,
+
+				ticks: {
+					fontSize: 40,
+					count: 17,
+					maxTicksLimit: 20,
+					callback: function (value, index, ticks) {
+						if (value < 0) {
+							value = 24 + value;
+						}
+						let minutes = value * 60;
+						let hours = Math.floor(minutes / 60);
+						minutes = minutes % 60;
+
+						if (minutes < 10) {
+							minutes = '0' + minutes;
+						}
+						if (hours < 10) {
+							hours = '0' + hours;
+						}
+
+						return hours + ':' + minutes;
+					},
+				},
+			},
+			x: {
+
+				
+				ticks: {
+					maxRotation: 0,
+					minRotation: 0,
+				},
+			},
+		},
+	},
+};
+
+
+input.func(chartData, dv.container);
