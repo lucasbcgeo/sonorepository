@@ -17,10 +17,10 @@ let timeDate = pages.map(p => {
 .filter(date => date !== "Invalid Date") //
 .sort((a, b) => window.moment(a).diff(window.moment(b))); // 
 
-const ratingData = pages.notadoDia;
+const ratingData = pages.dayratingData
 const sleepStart = pages.sleepStart;
 const sleepEnd = pages.sleepEnd;
-const sleepRatingData = pages.notadoSono;
+const sleepRatingData = pages.sleepRatingData;
 
 const sleepStartStop = sleepStart.values.map((value, index) => {
 	return [value, sleepEnd.values[index]];
