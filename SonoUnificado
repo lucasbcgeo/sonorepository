@@ -60,11 +60,13 @@ const sleepStartStopNumber = sleepStart.values.map((value, index) => {
 
 
 
-// Sleep Duration hours and minutes 
+// Sleep Duration
 
 
 
-let sleepData = sleepStart.values.map((startValue, index) => {
+
+// Supondo que sleepStart.values e sleepEnd.values contêm os horários de início e fim do sono respectivamente
+let sleepDurationDecimals = sleepStart.values.map((startValue, index) => {
     // Extrai horas e minutos do horário de início
     let [startHour, startMinute] = startValue.split(':').map(Number);
     let startMinutesTotal = startHour * 60 + startMinute;
@@ -76,37 +78,15 @@ let sleepData = sleepStart.values.map((startValue, index) => {
 
     // Ajusta para quando o sono passa da meia-noite
     if (endMinutesTotal < startMinutesTotal) {
-        endMinutesTotal += 24 * 60;
+        endMinutesTotal += 24 * 60; // Adiciona 24 horas em minutos ao total de fim
     }
 
     // Calcula a duração total em minutos
     let durationMinutes = endMinutesTotal - startMinutesTotal;
-    // Converte a duração para horas e minutos
-    let durationHours = Math.floor(durationMinutes / 60);
-    let remainingMinutes = durationMinutes % 60;
 
-    let date = moment(sleepEnd.dates[index], "YYYY-MM-DD");
-
-    // Retorna o objeto com data e duração formatada
-    return {
-        date: date.format("YYYY-MM-DD"),
-        duration: `${durationHours}h${remainingMinutes.toString().padStart(2, '0')}m` // Assegura dois dígitos para os minutos
-    };
+    // Converte a duração para decimal (horas)
+    return durationMinutes / 60;
 });
-
-
-
-let sleepDurationData = sleepData.map(item => {
-    // Assume que item.duration está no formato "XhYm"
-    let parts = item.duration.match(/(\d+)h(\d+)m/);
-    if (parts) {
-        let hours = parseInt(parts[1], 10);
-        let minutes = parseInt(parts[2], 10);
-        return hours + minutes / 60; // Converte "XhYm" para um valor decimal
-    }
-    return 0; // Retorna 0 se o formato não corresponder, como medida de precaução
-});
-
 
 
 
@@ -151,7 +131,7 @@ const chartData = {
 				bestFit: true,
 			},
 			{
-				yAxisID: 'A',
+				yAxisID: 'B',
 				type: 'line',
 				label: 'Sleep Duration',
 				data: sleepDurationData,
@@ -223,7 +203,7 @@ const chartData = {
 				max: 10,
 				title: {
 					display: true,
-					text: 'Rating(0-10) ou Duration  Hours - Minutes', // Título para a escala A
+					text: 'Rating(0-10) - Day or Sleep', // Título para a escala A
 					font: {
 						size: 15 // Ajuste o tamanho da fonte conforme necessário
 					}
@@ -236,7 +216,7 @@ const chartData = {
 				min: -3,
 				title: {
 					display: true,
-					text: 'HH:mm - 24h', // Título para a escala B
+					text: 'Sleep Duratiomm and Bedtime/Sleep Duration ', // Título para a escala B
 					font: {
 						size: 15 // Ajuste o tamanho da fonte conforme necessário
 					}
