@@ -116,7 +116,7 @@ const chartData = {
 			tooltip: {
 				callbacks: {
 					label: function(context) {
-						if (context.dataset.label === 'Acordou/Dormiu') {
+					if (context.dataset.label === 'wake-up/went to bed') {
 							let value = context.raw;
 							const formatTime = (time) => {
 								let hours = Math.floor(time);
