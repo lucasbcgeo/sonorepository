@@ -1,4 +1,6 @@
-/Y - A X I S   D A T A
+//Y - A X I S   D A T A
+//      ->                        Y                    <-
+
 
 let pages = dv
     .pages('"Jornada/Notas Diárias"')
@@ -13,12 +15,15 @@ let pages = dv
 
 
 
-
-
 const ratingData = pages.notadoDia;
 const sleepStart = pages.sleepStart;
 const sleepEnd = pages.sleepEnd;
 const sleepRatingData = pages.notadoSono;
+
+
+
+
+
 
 
 // went to bed       /    wake-up
@@ -48,7 +53,16 @@ const sleepStartStopNumber = sleepStart.values.map((value, index) => {
     return [startDecimal, endDecimal];
 });
 
+
+
+
+
+
+
+
 // Sleep Duration hours and minutes 
+
+
 
 let sleepData = sleepStart.values.map((startValue, index) => {
     // Extrai horas e minutos do horário de início
@@ -81,7 +95,7 @@ let sleepData = sleepStart.values.map((startValue, index) => {
 });
 
 
-// Este é o cálculo de durações que você pode usar diretamente ou adaptar conforme necessário
+
 let sleepDurationData = sleepData.map(item => {
     // Assume que item.duration está no formato "XhYm"
     let parts = item.duration.match(/(\d+)h(\d+)m/);
@@ -98,9 +112,11 @@ let sleepDurationData = sleepData.map(item => {
 
 
 
+
+
+
 // Label X data config
 //      ->                        X                      <-
-
 
 
 
