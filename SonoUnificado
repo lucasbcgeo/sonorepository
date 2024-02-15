@@ -1,26 +1,22 @@
-
 let pages = dv
     .pages('"Jornada/Notas Diárias"')
-    .filter(p => {      
-        let dateOfFile = window.moment(p.file.name, "DD-MM-YYYY");
+    .filter(p => {
+        // Converter o nome do arquivo da página atual para um objeto moment e formatá-lo
+        let dateOfFile = window.moment(p.file.name, "YYYY-MM-DD");
         let formattedDate = dateOfFile.isValid() ? dateOfFile.format("YYYY-MM-DD") : null;
+        // Verificar se a data formatada está dentro do intervalo especificado
         return formattedDate && window.moment(formattedDate).isSameOrAfter(window.moment(input.START)) && window.moment(formattedDate).isSameOrBefore(window.moment(input.END));
     })
 	.sort(p => p.file.name);
 
 
-let timeDate = pages.map(p => {
-    let dateOfFile = window.moment(p.file.name,"DD-MM-YYYY");
-    return dateOfFile.isValid() ? dateOfFile.format("dddd") : "Invalid Date";
-	
-})
-.filter(date => date !== "Invalid Date") //
-.sort((a, b) => window.moment(a).diff(window.moment(b))); // 
 
-const ratingData = pages.dayratingData
+
+
+const ratingData = pages.notadoDia;
 const sleepStart = pages.sleepStart;
 const sleepEnd = pages.sleepEnd;
-const sleepRatingData = pages.sleepRatingData;
+const sleepRatingData = pages.notadoSono;
 
 const sleepStartStop = sleepStart.values.map((value, index) => {
 	return [value, sleepEnd.values[index]];
@@ -56,6 +52,16 @@ let sleepData = sleepStartStopNumber.map(([start, end], index) => {
     };
 });
 
+let timeDate = pages.map(p => {
+    let dateOfFile = window.moment(p.file.name,"YYYY-MM-DD");
+    return dateOfFile.isValid() ? dateOfFile.format("YYYY-MM-DD") : "Invalid Date";
+	
+})
+.filter(date => date !== "Invalid Date") // Filtra datas inválidas.
+.sort((a, b) => window.moment(a).diff(window.moment(b))); // diff é uma função que calcula a diferença Ordena do mais velho para o mais novo.
+
+
+
 // Observação: Este código assume que 'input.start' e 'input.end' são datas válidas e que 'moment' está disponível
 
 
@@ -77,7 +83,7 @@ const chartData = {
 			{
 				yAxisID: 'A',
 				type: 'line',
-				label: 'Sleep Hours,
+				label: 'Lenght sleep',
 				data: sleepData.map(item => item.duration),
 				borderColor: ['rgb(54, 162, 235)'],
 				borderWidth: 1,
@@ -86,7 +92,7 @@ const chartData = {
 			{
 				yAxisID: 'A',
 				type: 'line',
-				label: 'Nota do Sono',
+				label: 'Sleep Duration',
 				data: sleepRatingData.values,
 				borderColor: ['rgb(255, 206, 86)'],
 				borderWidth: 1,
@@ -95,12 +101,12 @@ const chartData = {
 			{
 				yAxisID: 'B',
 				type: 'bar',
-				label: 'Wake-up/went to bed',
+				label: 'wake-up/went to bed',
 				data: sleepStartStopNumber,
 				backgroundColor: ['rgb(153, 102, 255, 0.2)'],
 				borderColor: ['rgb(153, 102, 255, 1)'],
-				borderWidth: 1,
 				bestFit: true,
+				borderWidth: { top: 0, bottom: 0, right: 0, left: 2 },
 			},
 		],
 	},
@@ -121,7 +127,7 @@ const chartData = {
 	
 							const startTime = formatTime(value[0]);
 							const endTime = formatTime(value[1]);
-							return `Dormiu: ${startTime}, Acordou: ${endTime}`;
+							return `went to bed: ${startTime}, wake-up: ${endTime}`;
 						} else {
 							return `${context.dataset.label}: ${context.formattedValue}`;
 						}
@@ -132,7 +138,7 @@ const chartData = {
 		scales: {
 			A: {
 				type: 'linear',
-				position: 'left',
+				position: 'right',
 				beginAtZero: true,
 				min: 0,
 				max: 10,
@@ -140,7 +146,7 @@ const chartData = {
 			},
 			B: {
 				type: 'linear',
-				position: 'right',
+				position: 'left',
 				max: 13,
 				min: -3,
 
@@ -181,3 +187,100 @@ const chartData = {
 
 
 input.func(chartData, dv.container);
+
+
+
+/* Glossário :
+
+// 'options': Este objeto contém as configurações globais para personalizar o gráfico, 
+incluindo escalas, legendas, tooltips, entre outros.
+
+// 'plugins': Dentro de 'options', 'plugins' permite a integração e configuração de funcionalidades 
+adicionais nos gráficos do Chart.js, como legendas customizadas e tooltips.
+
+// 'tooltip': Um 'tooltip' é uma pequena caixa de informação que aparece ao usuário quando o cursor 
+é posicionado sobre um elemento do gráfico, como um ponto de dados. É usado para fornecer mais 
+informações sobre aquele ponto específico.
+
+// 'callbacks': Os 'callbacks' são funções que podem ser definidas para modificar ou estender 
+o comportamento padrão de certas operações no Chart.js, como a geração de texto para tooltips.
+
+// 'label': Dentro de 'callbacks' para 'tooltip', a função 'label' é especificamente usada para 
+customizar o texto mostrado no tooltip. Ela é chamada para cada ponto de dados quando o tooltip 
+é ativado.
+
+// 'context': 'context' é o argumento passado para a função 'label'. Ele contém informações 
+sobre o ponto de dados atual, incluindo o valor do dado, o dataset a que pertence, e outras 
+propriedades úteis.
+
+// 'context.dataset.label === 'Acordou/Dormiu'': Esta expressão usa o operador de igualdade 
+estrita '===' para verificar se o rótulo do conjunto de dados atual é exatamente 'Acordou/Dormiu'. 
+É uma comparação de valor e tipo.
+
+
+
+
+// 'context.raw': 'context.raw' acessa o valor original (não processado ou formatado) associado 
+ao ponto de dados atual. Isso é útil para obter os dados exatos fornecidos ao gráfico.
+
+// 'Math.floor': 'Math.floor' é uma função matemática em JavaScript que arredonda um número 
+para baixo para o inteiro mais próximo. É usada aqui para obter o componente de horas a partir 
+de um valor de tempo decimal.
+
+// 'Math.round': Similarmente, 'Math.round' arredonda um número para o inteiro mais próximo. 
+Aqui, é usada para calcular os minutos a partir da parte decimal do valor do tempo.
+
+// 'hours.toString().padStart(2, '0')': Este método converte o número de horas em uma string e g
+arante que tenha pelo menos dois caracteres, adicionando um '0' à esquerda se necessário. Isso é útil para formatar o tempo no padrão HH:mm.
+
+// 'return `Acordou: ${startTime}, Dormiu: ${endTime}`': Esta linha constrói e retorna a string final que será exibida no tooltip. Usa template literals (cercados por backticks ``) para incluir variáveis (startTime e endTime) diretamente dentro da string.
+
+/*
+Explicação acima resume a lógica e o propósito
+
+
+// Coerção de Tipo no JavaScript:
+// - Coerção de Tipo é o processo automático pelo qual valores de diferentes tipos são convertidos 
+entre si pelo JavaScript. 
+//   Isso ocorre para adaptar os valores a contextos onde tipos específicos são esperados.
+
+// Tipos de Coerção:
+// - Coerção Implícita: Acontece automaticamente quando o JavaScript tenta operar com valores de diferentes tipos. 
+//   Por exemplo, ao usar o operador de igualdade solta (==), o JavaScript pode converter uma string para um número 
+//   para compará-los.
+//   Ex: 0 == "0" // true, "0" é convertido para 0 antes da comparação.
+
+// - Coerção Explícita: Ocorre quando o desenvolvedor converte explicitamente valores de um tipo para outro usando funções 
+//   ou métodos específicos. 
+//   Ex: var numero = Number("123") // Converte a string "123" em um número(OLHE NUMBER o segundo).
+
+
+
+// Tipos de operadores de Igualdade no JavaScript:
+// - Igualdade Solta (==): Compara dois valores quanto à igualdade, permitindo a coerção de tipo. 
+//   Ou seja, tenta converter os valores para um tipo comum antes de compará-los.
+//   Ex: 0 == '0' // true, porque '0' (string olhe o ' ') é convertido para 0 (número) antes da comparação.
+
+// - Igualdade Estrita (===): Compara dois valores quanto à igualdade, sem permitir a coerção de tipo. 
+//   Se os valores não são do mesmo tipo, retorna false imediatamente.
+//   Ex: 0 === '0' // false, porque os tipos (número vs. string) são diferentes.
+
+Desigualdade Solta (!=):
+
+Funciona de forma semelhante à igualdade solta (==), mas verifica se os valores são diferentes, realizando conversão de tipo se necessário.
+Exemplo:
+javascript
+Copy code
+0 != '0'; // false, pois são considerados iguais após a conversão.
+Desigualdade Estrita (!==):
+
+Semelhante à igualdade estrita (===), verifica se os valores são diferentes sem realizar conversão de tipo.
+Exemplo:
+javascript
+Copy code
+0 !== '0'; // true, pois são de tipos diferentes.
+
+// A compreensão desses conceitos é crucial para escrever código preciso e prevenir bugs relacionados a conversões 
+// de tipo inesperadas ou comparações incorretas.
+*/
+
